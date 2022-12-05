@@ -1,25 +1,24 @@
 #!/usr/bin/python3
-"""Lists all states from the database hbtn_0e_0_usa"""
+"""a script that lists all states from the database hbtn_0e_0_usa
+"""
 
-if __name__ == '__main__':
-    from sys import argv
-    import MySQLdb as mysql
 
-    try:
-        db = mysql.connect(host='localhost', port=3306, user=argv[1],
-                           passwd=argv[2], db=argv[3])
-    except Exception:
-        print('Failed to connect to the database')
-        exit(0)
+import MySQLdb
+from sys import argv
 
+if __name__ == "__main__":
+
+    # connect to database
+    db = MySQLdb.connect(host="localhost",
+                         port=3306,
+                         user=argv[1],
+                         passwd=argv[2],
+                         db=argv[3])
+
+    # create cursor to exec queries using SQL
     cursor = db.cursor()
-
-    cursor.execute("SELECT * FROM states ORDER BY id ASC;")
-
-    result_query = cursor.fetchall()
-
-    for row in result_query:
+    cursor.execute("SELECT * FROM states ORDER BY id ASC")
+    for row in cursor.fetchall():
         print(row)
-
     cursor.close()
     db.close()

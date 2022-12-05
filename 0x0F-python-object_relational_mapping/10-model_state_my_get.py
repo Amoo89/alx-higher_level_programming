@@ -1,38 +1,31 @@
 #!/usr/bin/python3
 """
-Prints the State object with the name passed as argument
-from the database hbtn_0e_6_usa
+a script that prints the State object with the name passed
+as argument from the database hbtn_0e_6_usa
 """
 
+from sys import argv
+from model_state import Base, State
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+
 if __name__ == "__main__":
-    from sqlalchemy.orm import sessionmaker
-    from sqlalchemy import create_engine
-    from model_state import Base, State
-    from sys import argv
-    import re
 
-    if (len(argv) != 5):
-        print('Use: username, password, database_name, state')
-        exit(1)
-
-    searched = ' '.join(argv[4].split())
-
-    if (re.search('^[a-zA-Z ]+$', searched) is None):
-        print('Enter a valid name state (example: Arizona)')
-        exit(1)
-
-    engine = create_engine('mysql+mysqldb://{}:{}@localhost/{}'.format(
-        argv[1], argv[2], argv[3]), pool_pre_ping=True)
+    # make engine for database
+    user = argv[1]
+    passwd = argv[2]
+    db = argv[3]
+    engine = create_engine('mysql+mysqldb://{}:{}@localhost/{}'.
+                           format(user, passwd, db), pool_pre_ping=True)
     Base.metadata.create_all(engine)
-
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    states = session.query(State).where(State.name == searched)
-
-    if (states.count() == 0):
-        print('Not found')
+    # query python instance in database state id given state name
+    state = session.query(State).filter_by(name=argv[4]).first()
+    if state:
+        print("{:d}".format(state.id))
     else:
-        for row in states:
-            print(row.id)
+        print("Not found")
     session.close()

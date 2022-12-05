@@ -1,48 +1,33 @@
 #!/usr/bin/python3
 """
-Takes in the name of a state as an argument and
-lists all cities of that state, using
-the database hbtn_0e_4_usa
+a script that takes in the name of a state as an argument
+and lists all cities of that state,
+using the database hbtn_0e_4_usa
 """
 
-if __name__ == '__main__':
-    from sys import argv
-    import MySQLdb as mysql
-    import re
+import MySQLdb
+from sys import argv
 
-    if (len(argv) != 5):
-        print('Use: username, password, database name, state name')
-        exit(1)
+if __name__ == "__main__":
 
-    state_name = ' '.join(argv[4].split())
+    # connect to database
+    db = MySQLdb.connect(host="localhost",
+                         port=3306,
+                         user=argv[1],
+                         passwd=argv[2],
+                         db=argv[3])
 
-    if (re.search('^[a-zA-Z ]+$', state_name) is None):
-        print('Enter a valid name state (example: California)')
-        exit(1)
-
-    try:
-        db = mysql.connect(host='localhost', port=3306, user=argv[1],
-                           passwd=argv[2], db=argv[3])
-    except Exception:
-        print('Failed to connect to the database')
-        exit(0)
-
+    # create cursor to exec queries using SQL; join two tables for all info
     cursor = db.cursor()
+    sql_cmd = "SELECT cities.name \
+                 FROM states \
+                 INNER JOIN cities ON states.id = cities.state_id \
+                 WHERE states.name LIKE %s \
+                 ORDER BY cities.id ASC"""
+    cursor.execute(sql_cmd, (argv[4], ))
 
-    cuantity = cursor.execute("""SELECT c.name FROM cities as c
-                      INNER JOIN states as s
-                      ON c.state_id = s.id
-                      WHERE s.name = '{:s}'
-                      ORDER BY c.id ASC;""".format(state_name))
-
-    result_query = cursor.fetchall()
-
-    final = []
-
-    for i in range(cuantity):
-        final.append(result_query[i][0])
-
-    print(', '.join(final))
+    # format the printing of cities of same state separated by commas
+    print(', '.join(["{:s}".format(city[0]) for city in cursor.fetchall()]))
 
     cursor.close()
     db.close()
