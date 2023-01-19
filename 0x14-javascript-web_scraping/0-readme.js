@@ -1,4 +1,3 @@
-
 #!/usr/bin/node
 
 const filename = process.argv[2];
